@@ -10,6 +10,7 @@ const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    role: 'User',
     rememberMe: false,
   });
   const [errors, setErrors] = useState({});
@@ -34,7 +35,7 @@ const Login = () => {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validate();
 
@@ -43,14 +44,12 @@ const Login = () => {
       return;
     }
 
-    // Mock login - in real app, this would call an API
-    login({
-      name: 'Admin User',
-      email: formData.email,
-      role: 'Administrator',
-    });
-
-    navigate('/dashboard');
+    try {
+      await login(formData.email, formData.password);
+      navigate('/dashboard');
+    } catch (error) {
+      setErrors({ email: error.message });
+    }
   };
 
   return (
@@ -131,6 +130,23 @@ const Login = () => {
               {errors.password && (
                 <p className="text-red-500 text-sm mt-1">{errors.password}</p>
               )}
+            </div>
+
+            {/* Role Selection */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                Select Role
+              </label>
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="Administrator">Administrator</option>
+                <option value="Doctor">Doctor</option>
+                <option value="User">User</option>
+              </select>
             </div>
 
             {/* Remember Me */}

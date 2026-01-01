@@ -1,16 +1,20 @@
 import { useState } from 'react';
-import { appointments, patients, doctors } from '../data/mockData';
+import { useHospital } from '../context/HospitalContext';
 
-const NewAppointmentForm = ({ onClose, onSuccess }) => {
-  const [formData, setFormData] = useState({
-    patientName: patients[0].name,
-    doctorName: doctors[0].name,
+const NewAppointmentForm = ({ onClose, onSuccess, initialData }) => {
+  const { patients, doctors, addAppointment, updateAppointment, deleteAppointment } = useHospital();
+  const isEdit = !!initialData;
+
+  const [formData, setFormData] = useState(initialData || {
+    patientName: patients[0]?.name || '',
+    doctorName: doctors[0]?.name || '',
     date: '',
     time: '',
     type: 'Consultation',
   });
 
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,8 +39,7 @@ const NewAppointmentForm = ({ onClose, onSuccess }) => {
     
     return newErrors;
   };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validate();
 
@@ -45,16 +48,33 @@ const NewAppointmentForm = ({ onClose, onSuccess }) => {
       return;
     }
 
-    // Add new appointment to mock data
-    const newAppointment = {
-      id: appointments.length + 1,
-      ...formData,
-      status: 'Pending',
-    };
+    setIsSubmitting(true);
+    try {
+      if (isEdit) {
+        await updateAppointment(initialData._id || initialData.id, formData);
+        onSuccess?.("Appointment schedule updated");
+      } else {
+        const newAppointment = {
+          ...formData,
+          status: 'Pending',
+        };
+        await addAppointment(newAppointment);
+        onSuccess?.("Appointment scheduled successfully");
+      }
+      onClose();
+    } catch (err) {
+      console.error("Appointment form error:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-    appointments.push(newAppointment);
-    onSuccess?.();
-    onClose();
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to cancel and remove this appointment?")) {
+      await deleteAppointment(initialData._id || initialData.id);
+      onSuccess?.("Appointment removed");
+      onClose();
+    }
   };
 
   // Get minimum date (today)
@@ -74,7 +94,7 @@ const NewAppointmentForm = ({ onClose, onSuccess }) => {
           className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
           {patients.map((patient) => (
-            <option key={patient.id} value={patient.name}>
+            <option key={patient._id || patient.id} value={patient.name}>
               {patient.name} - {patient.age}y, {patient.bloodGroup}
             </option>
           ))}
@@ -93,7 +113,7 @@ const NewAppointmentForm = ({ onClose, onSuccess }) => {
           className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
           {doctors.map((doctor) => (
-            <option key={doctor.id} value={doctor.name}>
+            <option key={doctor._id || doctor.id} value={doctor.name}>
               {doctor.name} - {doctor.specialty}
             </option>
           ))}
@@ -157,21 +177,34 @@ const NewAppointmentForm = ({ onClose, onSuccess }) => {
         </select>
       </div>
 
-      {/* Buttons */}
-      <div className="flex gap-3 pt-4">
-        <button
-          type="button"
-          onClick={onClose}
-          className="flex-1 px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className="flex-1 px-6 py-3 bg-gradient-to-r from-primary-500 to-accent text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-        >
-          Schedule Appointment
-        </button>
+      <div className="flex justify-between gap-3 pt-6 border-t border-gray-100 dark:border-gray-700">
+        <div className="flex gap-2">
+            {isEdit && (
+                <button
+                    type="button"
+                    onClick={handleDelete}
+                    className="px-6 py-3 bg-red-100 hover:bg-red-200 text-red-600 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all italic"
+                >
+                    Delete
+                </button>
+            )}
+        </div>
+        <div className="flex gap-3">
+            <button
+                type="button"
+                onClick={onClose}
+                className="px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl text-xs font-black uppercase tracking-widest transition-all italic"
+            >
+                Cancel
+            </button>
+            <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`px-8 py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all shadow-xl shadow-primary-500/30 italic ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+                {isSubmitting ? 'Scheduling...' : (isEdit ? 'Save Changes' : 'Save Details')}
+            </button>
+        </div>
       </div>
     </form>
   );

@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { register, login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -39,7 +39,7 @@ const Register = () => {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validate();
 
@@ -48,14 +48,20 @@ const Register = () => {
       return;
     }
 
-    // Mock registration - in real app, this would call an API
-    login({
-      name: formData.name,
-      email: formData.email,
-      role: formData.role,
-    });
-
-    navigate('/dashboard');
+    try {
+      await register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role
+      });
+      
+      // Auto login after registration
+      await login(formData.email, formData.password);
+      navigate('/dashboard');
+    } catch (error) {
+      setErrors({ email: error.message });
+    }
   };
 
   return (
@@ -140,7 +146,7 @@ const Register = () => {
               >
                 <option>Admin</option>
                 <option>Doctor</option>
-                <option>Staff</option>
+                <option>User</option>
               </select>
             </div>
 

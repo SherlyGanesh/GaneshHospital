@@ -65,7 +65,7 @@ const Landing = () => {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="card group hover:shadow-2xl hover:scale-105 transition-all duration-300"
+              className="card group hover:shadow-lg hover:scale-105 transition-all duration-300"
             >
               <div className="w-14 h-14 bg-gradient-to-br from-primary-400 to-accent rounded-2xl flex items-center justify-center mb-4 group-hover:rotate-6 transition-transform duration-300">
                 <feature.icon className="w-7 h-7 text-white" />

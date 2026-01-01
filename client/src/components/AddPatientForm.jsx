@@ -1,18 +1,22 @@
 import { useState } from 'react';
-import { patients, doctors } from '../data/mockData';
+import { useHospital } from '../context/HospitalContext';
 
-const AddPatientForm = ({ onClose, onSuccess }) => {
-  const [formData, setFormData] = useState({
+const AddPatientForm = ({ onClose, onSuccess, initialData }) => {
+  const { doctors, addPatient, updatePatient, deleteUser, deletePatient, patients } = useHospital();
+  const isEdit = !!initialData;
+  
+  const [formData, setFormData] = useState(initialData || {
     name: '',
     age: '',
     gender: 'Female',
     bloodGroup: 'O+',
     phone: '',
     condition: '',
-    doctor: doctors[0].name,
+    doctor: doctors[0]?.name || '',
   });
 
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -33,7 +37,7 @@ const AddPatientForm = ({ onClose, onSuccess }) => {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validate();
 
@@ -42,18 +46,45 @@ const AddPatientForm = ({ onClose, onSuccess }) => {
       return;
     }
 
-    // Add new patient to mock data
-    const newPatient = {
-      id: patients.length + 1,
-      ...formData,
-      age: parseInt(formData.age),
-      lastVisit: new Date().toISOString().split('T')[0],
-      status: 'Stable',
-    };
+    setIsSubmitting(true);
+    try {
+      if (isEdit) {
+        await updatePatient(initialData._id || initialData.id, {
+          ...formData,
+          age: parseInt(formData.age)
+        });
+        onSuccess?.("Patient updated successfully");
+      } else {
+        const selectedDoctorArg = doctors.find(d => d.name === formData.doctor);
+        const assignedBlock = selectedDoctorArg ? selectedDoctorArg.block : 'Unassigned';
 
-    patients.push(newPatient);
-    onSuccess?.();
-    onClose();
+        const newPatient = {
+          ...formData,
+          age: parseInt(formData.age),
+          lastVisit: new Date().toISOString().split('T')[0],
+          status: 'Stable',
+          assignedBlock: assignedBlock,
+          doctor: formData.doctor
+        };
+
+        await addPatient(newPatient);
+        onSuccess?.("Patient added successfully");
+      }
+      onClose();
+    } catch (err) {
+      console.error("Patient form error:", err);
+      // addToast is handled in context
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = () => {
+    if (window.confirm(`Are you sure you want to delete patient ${formData.name}?`)) {
+      deletePatient(initialData._id || initialData.id);
+      onSuccess?.("Patient record deleted");
+      onClose();
+    }
   };
 
   return (
@@ -183,28 +214,41 @@ const AddPatientForm = ({ onClose, onSuccess }) => {
           className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
           {doctors.map((doc) => (
-            <option key={doc.id} value={doc.name}>
+            <option key={doc._id || doc.id} value={doc.name}>
               {doc.name} - {doc.specialty}
             </option>
           ))}
         </select>
       </div>
 
-      {/* Buttons */}
-      <div className="flex gap-3 pt-4">
-        <button
-          type="button"
-          onClick={onClose}
-          className="flex-1 px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className="flex-1 px-6 py-3 bg-gradient-to-r from-primary-500 to-accent text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-        >
-          Add Patient
-        </button>
+      <div className="flex justify-between gap-3 pt-6 border-t border-gray-100 dark:border-gray-700">
+        <div className="flex gap-2">
+            {isEdit && (
+                <button
+                    type="button"
+                    onClick={handleDelete}
+                    className="px-6 py-3 bg-red-100 hover:bg-red-200 text-red-600 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all italic"
+                >
+                    Delete
+                </button>
+            )}
+        </div>
+        <div className="flex gap-3">
+            <button
+                type="button"
+                onClick={onClose}
+                className="px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl text-xs font-black uppercase tracking-widest transition-all italic"
+            >
+                Cancel
+            </button>
+            <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`px-8 py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all shadow-xl shadow-primary-500/30 italic ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+                {isSubmitting ? 'Processing...' : (isEdit ? 'Save Changes' : 'Save Details')}
+            </button>
+        </div>
       </div>
     </form>
   );

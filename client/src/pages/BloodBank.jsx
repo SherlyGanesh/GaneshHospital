@@ -1,7 +1,8 @@
-import { bloodBank } from '../data/mockData';
+import { useHospital } from '../context/HospitalContext';
 import { Droplet, AlertTriangle, CheckCircle } from 'lucide-react';
 
 const BloodBank = () => {
+  const { bloodBank } = useHospital();
   const getStatusColor = (status) => {
     switch (status) {
       case 'Available':
@@ -51,7 +52,7 @@ const BloodBank = () => {
         {bloodBank.map((blood, index) => (
           <div
             key={index}
-            className="card hover:shadow-2xl hover:scale-105 transition-all duration-300"
+            className="card hover:shadow-lg hover:scale-105 transition-all duration-300"
           >
             <div className="text-center">
               <div className="w-20 h-20 mx-auto bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center mb-4 shadow-lg shadow-red-500/30">

@@ -1,0 +1,80 @@
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Request logging middleware
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
+    next();
+});
+
+// MongoDB Connection
+const connectDB = async () => {
+    try {
+        await mongoose.connect(process.env.MONGODB_URI, {
+            serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+        });
+        console.log('✅ Connected to MongoDB Atlas');
+    } catch (err) {
+        console.error('❌ MongoDB Connection Error:');
+        console.error('Reason:', err.message);
+        console.error('TIP: If this is a ServerSelectionError, ensure your IP is whitelisted in MongoDB Atlas: https://www.mongodb.com/docs/atlas/security-whitelist/');
+    }
+};
+
+connectDB();
+
+// Basic Routes
+app.get('/', (req, res) => {
+    res.send('Hospital Management System API is running...');
+});
+
+// Import Routes
+import patientRoutes from './routes/patientRoutes.js';
+import appointmentRoutes from './routes/appointmentRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
+import emergencyRoutes from './routes/emergencyRoutes.js';
+import hospitalDataRoutes from './routes/hospitalDataRoutes.js';
+
+// Use Routes
+app.use('/api/patients', patientRoutes);
+app.use('/api/appointments', appointmentRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/emergencies', emergencyRoutes);
+app.use('/api/hospital-data', hospitalDataRoutes);
+
+// Error Handling Middleware
+app.use((err, req, res, next) => {
+    console.error('SERVER ERROR:', err.stack);
+    
+    // Check for MongoDB connection errors
+    if (err.name === 'MongooseServerSelectionError' || err.message.includes('buffering timed out')) {
+        return res.status(503).json({
+            message: 'Database Connection Error. Please ensure your IP is whitelisted in MongoDB Atlas.',
+            error: err.message,
+            tip: 'Go to Atlas -> Network Access -> Add IP Address'
+        });
+    }
+
+    res.status(500).json({ 
+        message: 'Something went wrong on the server!', 
+        error: err.message,
+        stack: process.env.NODE_ENV === 'production' ? null : err.stack
+    });
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
