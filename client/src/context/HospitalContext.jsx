@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 // Mock data imports removed
 import { useToast } from './ToastContext';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : 'https://ganesh-hospital-backend.onrender.com/api');
 
 const HospitalContext = createContext();
 
