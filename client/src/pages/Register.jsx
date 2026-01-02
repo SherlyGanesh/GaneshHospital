@@ -13,7 +13,7 @@ const Register = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'Admin',
+    role: 'User',
   });
   const [errors, setErrors] = useState({});
 
@@ -53,7 +53,7 @@ const Register = () => {
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        role: formData.role
+        role: formData.role || 'User'
       });
       
       // Auto login after registration

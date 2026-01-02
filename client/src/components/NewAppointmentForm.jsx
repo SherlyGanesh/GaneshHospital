@@ -56,6 +56,8 @@ const NewAppointmentForm = ({ onClose, onSuccess, initialData }) => {
       } else {
         const newAppointment = {
           ...formData,
+          patientId: patients.find(p => p.name === formData.patientName)?._id || patients.find(p => p.name === formData.patientName)?.id,
+          doctorId: doctors.find(d => d.name === formData.doctorName)?._id || doctors.find(d => d.name === formData.doctorName)?.id,
           status: 'Pending',
         };
         await addAppointment(newAppointment);

@@ -9,6 +9,8 @@ router.post('/login', async (req, res) => {
     try {
         const user = await User.findOne({ email });
         if (user && user.password === password) { // In a real app, use hashing!
+            user.lastLogin = new Date();
+            await user.save();
             res.json(user);
         } else {
             res.status(401).json({ message: 'Invalid credentials' });

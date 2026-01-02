@@ -18,7 +18,12 @@ const Appointments = () => {
   const isAdmin = user?.role === 'Admin' || user?.role === 'SuperAdmin';
 
   const filteredAppointments = appointments.filter(apt => {
-    // Filter by doctor name if role is Doctor
+    // Filter for Patients
+    if (user?.role === 'User' && apt.patientId !== user?._id && apt.patientId !== user?.id && apt.patientName !== user?.name) {
+        return false;
+    }
+
+    // Filter for Doctors
     if (isDoctor && !apt.doctorName.toLowerCase().includes(user?.name?.toLowerCase() || '')) {
         return false;
     }

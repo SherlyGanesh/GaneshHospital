@@ -8,7 +8,8 @@ const userSchema = new mongoose.Schema({
     status: { type: String, enum: ['Active', 'Pending', 'Inactive'], default: 'Active' },
     specialty: { type: String },
     experience: { type: String },
-    block: { type: String }
+    block: { type: String },
+    lastLogin: { type: Date }
 }, { timestamps: true });
 
 export const User = mongoose.model('User', userSchema);

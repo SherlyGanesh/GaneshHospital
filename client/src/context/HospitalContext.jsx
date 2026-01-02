@@ -352,7 +352,6 @@ export const HospitalProvider = ({ children }) => {
     appointments,
     notifications,
     addAppointment,
-    addAppointment,
     updateAppointmentStatus,
     updateAppointment,
     deleteAppointment,
