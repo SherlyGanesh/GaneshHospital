@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Users, 
@@ -26,6 +26,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 
 const Sidebar = ({ isCollapsed = false, setIsCollapsed = () => {} }) => {
+  const navigate = useNavigate();
   const { logout, user } = useAuth();
   const isUser = user?.role === 'User';
   const isAdmin = user?.role === 'Admin' || user?.role === 'Administrator';
@@ -192,7 +193,7 @@ const Sidebar = ({ isCollapsed = false, setIsCollapsed = () => {} }) => {
           onClick={() => {
             if (window.confirm('Are you sure you want to logout?')) {
               logout();
-              window.location.href = '/login'; // Force a clean redirect
+              navigate('/login');
             }
           }}
           className={`flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all duration-300 w-full group ${isCollapsed ? 'justify-center px-0' : ''}`}

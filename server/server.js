@@ -43,7 +43,8 @@ const connectDB = async () => {
 connectDB();
 
 // Basic Routes
-app.get('/', (req, res) => {
+// Basic Routes
+app.get('/api/health', (req, res) => {
     res.send('Hospital Management System API is running...');
 });
 
