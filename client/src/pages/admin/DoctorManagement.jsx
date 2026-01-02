@@ -11,7 +11,7 @@ const DoctorManagement = () => {
     const { doctors, users, approveDoctor, deleteUser, addUser, updateUser } = useHospital();
     const { addToast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
-    const [showDeptModal, setShowDeptModal] = useState(false);
+
     const [showDocForm, setShowDocForm] = useState(false);
     const [selectedDoc, setSelectedDoc] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -35,16 +35,9 @@ const DoctorManagement = () => {
         }
     };
 
-    const handleOpenDeptModal = (doc) => {
-        setSelectedDoc(doc);
-        setShowDeptModal(true);
-    };
 
-    const handleAssignDept = (dept) => {
-        // Mock update
-        addToast(`Assigned Dr. ${selectedDoc.name} to ${dept}`, "success");
-        setShowDeptModal(false);
-    };
+
+
 
     const handleReject = (id) => {
         if(window.confirm('Reject this application? The user will be removed.')) {
@@ -202,14 +195,7 @@ const DoctorManagement = () => {
                                     </div>
                                     <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full shadow-lg" />
                                 </div>
-                                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button 
-                                        onClick={() => handleOpenDeptModal(doc)}
-                                        className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl text-gray-400 hover:text-primary-500" title="Manage Dept"
-                                    >
-                                        <Layers className="w-4 h-4" />
-                                    </button>
-                                </div>
+
                             </div>
                             
                             <h3 className="font-bold text-gray-800 dark:text-gray-100 italic truncate">{doc.name}</h3>

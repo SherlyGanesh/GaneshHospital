@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 // Mock data imports removed
 import { useToast } from './ToastContext';
 
@@ -342,7 +342,7 @@ export const HospitalProvider = ({ children }) => {
     }
   };
 
-  const value = useMemo(() => ({
+  const value = {
     patients,
     addPatient,
     updatePatient,
@@ -435,7 +435,7 @@ export const HospitalProvider = ({ children }) => {
           console.error('Error resolving emergency:', error);
         }
     }
-  }), [patients, doctors, appointments, notifications, prescriptions, medicalReports, availability, bloodBank, stats, analytics, users, emergencyAlerts, addToast]);
+  };
 
   return (
     <HospitalContext.Provider value={value}>

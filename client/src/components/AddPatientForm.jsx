@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useHospital } from '../context/HospitalContext';
 
 const AddPatientForm = ({ onClose, onSuccess, initialData }) => {
-  const { doctors, addPatient, updatePatient, deleteUser, deletePatient, patients } = useHospital();
+  const { doctors, addPatient, updatePatient, deletePatient } = useHospital();
   const isEdit = !!initialData;
   
   const [formData, setFormData] = useState(initialData || {
